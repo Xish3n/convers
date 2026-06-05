@@ -1,5 +1,4 @@
-openai
-python-dotenv
-requests
-pypdf
 gradio
+openai
+langchain
+langchain-community
