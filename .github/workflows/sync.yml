@@ -17,4 +17,4 @@ jobs:
       - name: Push to Hub
         env:
           HF_TOKEN: ${{ secrets.HF_TOKEN }}
-        run: git push --force https://Xish3n:$HF_TOKEN@huggingface.co/spaces/xich3n/convers main
+        run: git push --force https://git:$HF_TOKEN@huggingface.co/spaces/xich3n/convers main
