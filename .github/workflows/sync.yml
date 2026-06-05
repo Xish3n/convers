@@ -17,6 +17,6 @@ jobs:
         uses: huggingface/hub-sync@v0.1.0
         with:
           github_repo_id: ${{ github.repository }}
-          huggingface_repo_id: xich3n/convers
+          huggingface_repo_id: Xish3n/convers
           hf_token: ${{ secrets.HF_TOKEN }}
           repo_type: space
