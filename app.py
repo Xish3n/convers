@@ -1,3 +1,5 @@
+import sqlite3
+from datetime import datetime
 from dotenv import load_dotenv
 from openai import OpenAI
 import json
@@ -6,8 +8,34 @@ import requests
 from pypdf import PdfReader
 import gradio as gr
 
-
 load_dotenv(override=True)
+
+DB_FILE = "/data/assistant_data.db"
+
+def init_db():
+    os.makedirs(os.path.dirname(DB_FILE), exist_ok=True)
+    conn = sqlite3.connect(DB_FILE)
+    cursor = conn.cursor()
+    cursor.execute('''
+        CREATE TABLE IF NOT EXISTS user_details (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            name TEXT,
+            email TEXT,
+            notes TEXT,
+            timestamp TEXT
+        )
+    ''')
+    cursor.execute('''
+        CREATE TABLE IF NOT EXISTS unknown_questions (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            question TEXT,
+            timestamp TEXT
+        )
+    ''')
+    conn.commit()
+    conn.close()
+
+init_db()
 
 def push(text):
     requests.post(
@@ -19,12 +47,29 @@ def push(text):
         }
     )
 
-
 def record_user_details(email, name="Name not provided", notes="not provided"):
+    conn = sqlite3.connect(DB_FILE)
+    cursor = conn.cursor()
+    cursor.execute(
+        "INSERT INTO user_details (name, email, notes, timestamp) VALUES (?, ?, ?, ?)",
+        (name, email, notes, datetime.now().strftime("%Y-%m-%d %H:%M:%S"))
+    )
+    conn.commit()
+    conn.close()
+    
     push(f"Recording {name} with email {email} and notes {notes}")
     return {"recorded": "ok"}
 
 def record_unknown_question(question):
+    conn = sqlite3.connect(DB_FILE)
+    cursor = conn.cursor()
+    cursor.execute(
+        "INSERT INTO unknown_questions (question, timestamp) VALUES (?, ?)",
+        (question, datetime.now().strftime("%Y-%m-%d %H:%M:%S"))
+    )
+    conn.commit()
+    conn.close()
+    
     push(f"Recording {question}")
     return {"recorded": "ok"}
 
@@ -87,7 +132,6 @@ class Me:
         with open("mysum.txt", "r", encoding="utf-8") as f:
             self.summary = f.read()
 
-
     def handle_tool_call(self, tool_calls):
         results = []
         for tool_call in tool_calls:
@@ -131,4 +175,3 @@ If the user is engaging in discussion, try to steer them towards getting in touc
 if __name__ == "__main__":
     me = Me()
     gr.ChatInterface(me.chat, type="messages").launch()
-    

@@ -2,3 +2,6 @@ gradio
 openai
 langchain
 langchain-community
+python-dotenv
+requests
+pypdf
